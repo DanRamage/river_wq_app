@@ -1,0 +1,275 @@
+{% extends "index_template_base.html" %}
+{% block google_analytics %}
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-101477502-1', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+{% endblock %}
+
+{% block title %}My SC Rivers{% endblock %}
+{% block post_css_block %}
+    {{ super() }}
+    <!--Change the widths since we don't have the forecast columns -->
+    <style type="text/css">
+      .details-table-heading{
+        width:49%;
+      }
+      .details-rating{
+        width:49%;
+      }
+    /*
+    The info popup classes are used to style the contents of the popup. For river
+    project at the moment we don't have forecasts so we don't want to show that so
+    we update the styling to move the other pieces around.
+    */
+      /*
+    .info_popup_forecast_outer_div {
+      float:left;
+      padding-right:20px;
+      padding-top:15px;
+    }
+    .info_popup_forecast_inner_div {
+      text-align:right;
+    }
+    */
+    .info_popup_advisory_outer_div {
+      float:left;
+      padding-right:20px;
+      padding-top:15px;
+    }
+    .info_popup_advisory_inner_div {
+      text-align:right;
+    }
+    .info_popup_data_outer_div {
+      float:left;
+      /*padding-right:20px;*/
+      padding-top:15px;
+    }
+    .info_popup_data_inner_div {
+      text-align:right;
+    }
+    /* Override the colors defined in the style.css */
+    .popup_label_high {
+      background-color: #ee8b19;
+    }
+    .high {
+      background-color: #ee8b19;
+    }
+    </style>
+{% endblock %}
+
+{% block site_message_block %}
+  {% if site_message %}
+  <div id="message_area" class="message_area_text">
+    <div id="site_message_text" class="message_text">
+      <p>
+      <h3><bold>{{site_message}} <a id="message_link" href="#moreInformation"> More Info</a></bold></h3>
+      </p>
+    </div>
+  </div>
+  {% endif %}
+{%  endblock %}
+
+{% block beachListPage %}
+  <div data-role="header" data-id="mainheader" data-theme="c" data-position="fixed" data-tap-toggle="false">
+    <div data-role="navbar" data-iconpos="left">
+      <ul id="navItems">
+        <li><a data-icon="home" href="#mapPage">Map</a></li>
+        <li><a data-icon="search" href="#beachListPage" class="ui-state-persist ui-btn-active">Search</a></li>
+        <li><a data-icon="info" href="#moreInformation">Info</a></li>
+      </ul>
+    </div>
+    <ul id="beachListHeadings" data-role="listview">
+      <li data-theme="d" style="padding:0 0 5px 0;border:none;">
+        <span onclick="sortBy(1)" class="list-table-heading" style="text-align:left;padding-left:25px;">
+          <div id="arrows_1" class="arrow-asc"></div>
+          <div style="display:inline-block">Location</div>
+        </span>
+        <span onclick="sortBy(4)" class="list-table-heading">
+          <div id="arrows_4"></div>
+          <div style="display:inline-block">Advisory</div>
+        </span>
+        <span onclick="sortBy(5)" class="list-table-heading">
+          <div id="arrows_5"></div>
+          <div style="display:inline-block">Bacteria<br/>Data</div>
+        </span>
+      </li>
+    </ul>
+  </div>
+  <div data-role="content" style="padding-top:0">
+    <ul id="beachList" data-divider-theme="c" data-role="listview" data-filter="true"
+        data-filter-placeholder="Search sites (name or advisory, eg low)"></ul>
+  </div>
+{% endblock %}
+
+{% block beachDetailsPage %}
+  <div id="detailsheader" data-role="header" data-add-back-btn="true" data-id="detailsheader" data-theme="c"
+       data-position="fixed" data-tap-toggle="false">
+    <h1 id="beachName" style="font-size:12px;height:25px;"></h1>
+    <div data-role="navbar">
+      <div id="detail_page_tabs" data-role="tabs">
+        <ul>
+          <li><a id="details_data_tab_link" href="#data_panel">Data</a></li>
+          <li><a id="details_map_tab_link" href="#map_panel" class="detail_map_button">Aerial view</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div data-role="content" style="padding-left:0;padding-right:0;padding-bottom:0">
+    <div id="data_panel" data-role="tab-content">
+      <div id="beachDetailsContainer">
+        <ul id="beachDetailsHeadings" data-role="listview">
+          <li data-theme="d" style="padding:0;border:none;">
+            <span class="details-table-heading">Swim<br/>Advisory</span>
+            <span id="details_data_column" class="details-table-heading">Bacteria<br/>Data<br/></span>
+          </li>
+        </ul>
+        <ul id="beachDetails" data-divider-theme="c" data-role="listview"></ul>
+        <hr style="clear: both;visibility: hidden;"/>
+
+        <fieldset id="dayRangeSelector" style="padding-left:10px;" data-role="controlgroup" data-mini="true"
+                  data-type="horizontal">
+
+          <input type="radio" name="num-days" id="num-days-30" value="30"
+                 onclick="monitoringChart.xAxis[0].setExtremes(Date.parse(date_by_subtracting_days(current_date, 30)),Date.parse(current_date));"/>
+          <label for="num-days-30">30 days</label>
+
+          <input type="radio" name="num-days" id="num-days-60" value="60"
+                 onclick="monitoringChart.xAxis[0].setExtremes(Date.parse(date_by_subtracting_days(current_date, 60)),Date.parse(current_date));"/>
+          <label for="num-days-60">60 days</label>
+
+          <input type="radio" name="num-days" id="num-days-180" value="180"
+                 onclick="monitoringChart.xAxis[0].setExtremes(Date.parse(date_by_subtracting_days(current_date, 180)),Date.parse(current_date));"/>
+          <label for="num-days-180">180 days</label>
+
+          <input type="radio" name="num-days" id="num-days-365" value="365"
+                 onclick="monitoringChart.xAxis[0].setExtremes(Date.parse(date_by_subtracting_days(current_date, 365)),Date.parse(current_date));"
+                 checked="checked"/>
+          <label for="num-days-365">365 days</label>
+        </fieldset>
+      </div>
+      <div id="monitoring_data_graph" style="padding:0;width:99%"></div>
+    </div>
+
+    <div id="map_panel" data-role="tab-content" style="padding:0">
+      <div id="detail_map_canvas" style="width:100%"></div>
+    </div>
+
+  </div>
+
+{% endblock %}
+{% block about_content %}
+  <div data-role="collapsible-set" data-inset="false">
+    <div id="about" data-role="collapsible" data-collapsed="false">
+      <h3>&nbsp;About</h3>
+      <p><h3>One Scenic River – One Goal - Many Partners</h3></p>
+      <p>
+        A variety of stakeholders have come together to start an enhanced monitoring program for the Lower Saluda Scenic River during the peak recreational season.
+        We want to encourage safe recreational use of the river.  We are excited to announce that weekly water quality data will be accessible from www.howsmyscriver.org beginning this summer.
+      </p>
+      <p>
+        The Lower Saluda River Coalition is made up of river related businesses, environmental groups, local and state government, property owners, industry and other users of the river.
+        Our goal/purpose is to ensure safety of individual recreating on the river and to educate the public on issues related to natural waters.
+        The goal is to more frequent data available to rivers users so they can make informed decisions on when to recreate in the river.
+        The enhanced monitoring program will run from May through September.  It involves 8 monitoring locations that will be sampled weekly.
+      </p>
+      <p>
+        The first sampling event is planned for June 21, 2017. Results from the sampling will be on the website the next day.
+      </p>
+        <div class="logo_container">
+        </div>
+    </div>
+    <div id="faq" data-role="collapsible">
+      <h3>&nbsp;FAQ</h3>
+      <div data-role="collapsible-set" data-inset="false" style="margin-left: 10px">
+        <div data-role="collapsible">
+          <h3>&nbsp;Why are we testing the water?</h3>
+          <p>
+            Contact recreation activities (swimming, wading, tubing, and paddling) may expose river users to harmful pollution. This water quality monitoring program is intended to provide river users with reliable information on water quality conditions and educate them about pollution issues so they can make informed decisions about their river activities.
+          </p>
+        </div>
+        <div data-role="collapsible">
+          <h3>&nbsp;What is E. coli?</h3>
+          <p>
+            E. coli is a type of bacteria that is specific to fecal material from humans and other warm-blooded animals. It is used as an indicator of health risk from water contact in recreational waters as its presence in streams suggests that pathogenic microorganisms might also be present and that swimming and other contact recreation activities might be a health risk.
+          </p>
+        </div>
+        <div data-role="collapsible">
+          <h3>&nbsp;How often do we sample?</h3>
+          <p>
+            Samples will be collected weekly during the high recreation season (May 1 – Sept. 30). Samples will be collected every Wednesday and if a sample result is high the site will be re-sampled on Thursday.
+          </p>
+        </div>
+        <div data-role="collapsible">
+          <h3>&nbsp;How long are the results accurate?</h3>
+          <p>
+            These samples are only a snapshot of a single location at a single time. Water quality conditions can change quickly and may be different in areas just upstream or downstream of a sample site.
+          </p>
+        </div>
+        <div data-role="collapsible">
+          <h3>&nbsp;What is a swim advisory?</h3>
+          <p>
+            Advisories are cautions that water may contain harmful germs. Advisories are issued where high amounts of bacteria have been found.
+          </p>
+        </div>
+        <div data-role="collapsible">
+          <h3>&nbsp;Does a swim advisory mean the river off limits?</h3>
+          <p>
+            An advisory is just a warning that water may contain harmful germs. It does not mean that you cannot use the river, but you should use caution.
+          </p>
+        </div>
+        <div data-role="collapsible">
+          <h3>&nbsp;Who is the group supporting this work?</h3>
+          <p>
+            The coalition is made up of several river stakeholders including government agencies, municipalities, wastewater providers, parks, river advocacy organizations, river related businesses and other river users.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div id="advisory_data" data-role="collapsible">
+      <h3>&nbsp;Advisory Data</h3>
+      <h3>Indicators</h3>
+      <p> {{ sampling_program_info.description }}</p>
+      <p>
+        {% if sampling_program_info.advisory_limits %}
+          {% for limit_type, limit_rec in sampling_program_info.advisory_limits.iteritems() %}
+            {% if limit_type != 'No data' %}
+              {% if limit_type != 'High' %}
+                <img src="/static/images/{{ limit_rec.icon }}" /> {{ limit_type }} level ({{ limit_rec.min_limit }}-{{ limit_rec.max_limit }} per 100mL of water)<br />
+              {% else %}
+                <img src="/static/images/{{ limit_rec.icon }}" /> {{ limit_type }} level (>{{ limit_rec.min_limit }} per 100mL of water)<br />
+              {% endif %}
+            {% else %}
+              <img src="/static/images/{{ limit_rec.icon }}" /> No data available in the last 7 days<br />
+            {% endif %}
+          {%  endfor %}
+        {% endif %}
+      </p>
+    </div>
+    <div id="bacteria_sources" data-role="collapsible">
+      <h3>&nbsp;Bacteria Sources</h3>
+      <p>
+        Sources of fecal contamination to surface waters include wastewater treatment plants, on-site septic systems, domestic and wild animal manure, and storm runoff.
+      </p>
+      <p>
+        Information on stormwater runoff can be found on DHEC's website <a href="https://www.scdhec.gov/HomeAndEnvironment/Water/Stormwater/WhatisStormwater/" target="_blank">here.</a>
+      </p>
+    </div>
+
+    <div id="water_safety_info" data-role="collapsible">
+      <h3> Water Safety Info</h3>
+      <p>
+        More information on swimming safety can be found on DHEC's website <a href="http://www.scdhec.gov/HomeAndEnvironment/Water/NaturalSwimmingAreas/" target="_blank">here.</a>
+      </p>
+    </div>
+  </div>
+
+{% endblock %}

@@ -1,0 +1,86 @@
+.row-buffer-20px
+{
+  margin-top:20px;
+}
+
+html {
+  background: transparent;
+  font-family: "Helvetica Neue","Helvetica",Helvetica,Arial,sans-serif;
+}
+.full {
+    /*background: rgba(0, 0, 0, 0) url("images/howsthebeachbg.svg") no-repeat fixed center center / cover;*/
+    font-family: "Helvetica Neue","Helvetica",Helvetica,Arial,sans-serif;
+    min-height: 100%;
+    background-size:cover;
+}
+.header_text {
+  color: #626567;
+  /*color: RGB(255, 255, 255);*/
+  font-family: "Lato",sans-serif;
+  /*font-family: "Arial Rounded MT Bold","Helvetica Rounded",Arial,sans-serif;*/
+}
+.header_text h1 {
+  font-size: 36px;
+}
+.header_text h2 {
+  font-size: 24px;
+}
+.button_background
+{
+    background: rgba(0, 0, 0, 0) url("static/images/howsthebeachbg.svg") no-repeat fixed center center / cover;
+    min-height: 100%;
+    background-size:cover;
+}
+body { background: transparent;}
+.marketing {
+  background-color: #43b4c1;
+  font-family: "Lato",sans-serif;
+}
+.marketing-header {
+  color: #FFFFFF;
+}
+.marketing-disclaimer {
+  color: #FFFFFF;
+}
+.marketing .col-lg-4 {
+    margin-bottom: 20px;
+    text-align: center;
+}
+.marketing h2 {
+    font-weight: normal;
+}
+.marketing .col-lg-4 p {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.logos {
+  width: 75%;
+}
+.logo_row {
+  /*background-color: #94c83d;*/
+}
+.footer {
+  bottom: 0;
+  /*position: absolute;*/
+  width: 100%;
+}
+.footer_text {
+  color: #626567;
+  font-family: "Lato",sans-serif;
+}
+.footer_text h2 {
+  font-size: 24px;
+}
+
+.partners {
+  #background-color: #94c83d;
+
+}
+.entry_col {
+  color: RGB(255, 255, 255);
+  /*font-family: "Arial Rounded MT Bold","Helvetica Rounded",Arial,sans-serif;*/
+}
+.details-btn {
+  color: #43b4c1;
+  background-color: #FFFFFF;
+}
