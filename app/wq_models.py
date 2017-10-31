@@ -81,3 +81,62 @@ class Advisory_Limits(db.Model):
   limit_type = db.Column(db.String(32))
 
   site = db.relationship('Project_Area', backref='advisory_limits')
+
+
+
+class Boundary(db.Model):
+  __table_name__ = 'boundary'
+  id = db.Column(db.Integer, primary_key=True)
+  row_entry_date = db.Column(db.String(32))
+  row_update_date = db.Column(db.String(32))
+  boundary_name  = db.Column(db.String(128), nullable=False)
+  wkt_boundary = db.Column(db.Text, nullable=True)
+
+  def __str__(self):
+    return self.boundary_name
+
+class Boundary_Mapper(db.Model):
+  __table_name__ = 'boundary_mapper'
+  sample_site_id = db.Column(db.Integer, db.ForeignKey('sample__site.id'), primary_key=True)
+  boundary_id = db.Column(db.Integer, db.ForeignKey('boundary.id'), primary_key=True)
+
+
+
+class Sample_Site(db.Model):
+  __table_name__ = "sample_site"
+  id = db.Column(db.Integer, primary_key=True)
+  row_entry_date = db.Column(db.String(32))
+  row_update_date = db.Column(db.String(32))
+
+  project_site_id = db.Column('project_site_id', db.Integer, db.ForeignKey('project_area.id'))
+  project_site = db.relationship('Project_Area', backref='sample_sites')
+
+  wkt_location = db.Column(db.Text, nullable=False)
+  site_name = db.Column(db.String(128), nullable=False)
+  description = db.Column(db.Text, nullable=True)
+  epa_id = db.Column(db.String(32), nullable=True)
+  county = db.Column(db.String(32), nullable=True)
+  issues_advisories = db.Column(db.Boolean, nullable=True)
+  advisory_text = db.Column(db.String(32), nullable=True)
+
+  boundaries = db.relationship(Boundary,
+                             secondary='boundary__mapper',
+                             primaryjoin=(Boundary_Mapper.sample_site_id == id),
+                             backref='sample_site')
+  extents = db.relationship("Site_Extent", backref='sample_site')
+
+  def __str__(self):
+    return self.site_name
+
+
+class Site_Extent(db.Model):
+  __table_name__ = 'site_extent'
+  id = db.Column(db.Integer, primary_key=True)
+  row_entry_date = db.Column(db.String(32))
+  row_update_date = db.Column(db.String(32))
+  extent_name  = db.Column(db.String(128), nullable=False)
+  wkt_extent = db.Column(db.Text, nullable=True)
+
+  site_id = db.Column(db.Integer, db.ForeignKey(Sample_Site.id))
+  sample_site_name = db.relationship('Sample_Site', backref='site_extents', foreign_keys=[site_id])
+

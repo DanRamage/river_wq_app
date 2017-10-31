@@ -536,10 +536,24 @@ class advisory_limits_view(base_view):
   form_columns = ['site', 'min_limit', 'max_limit', 'icon', 'limit_type']
   def is_accessible(self):
     return login.current_user.is_authenticated
-  """
-  @expose('/')
-  def index(self):
-    if not login.current_user.is_authenticated:
-        return redirect(url_for('.login_view'))
-    return self.render('hello.html')
-  """
+
+class sample_site_view(base_view):
+  column_list = ['project_site', 'site_name', 'wkt_location', 'description', 'epa_id', 'county', 'issues_advisories', 'advisory_text', 'boundaries', 'row_entry_date', 'row_update_date']
+  form_columns = ['project_site', 'site_name', 'wkt_location', 'description', 'epa_id', 'county', 'issues_advisories', 'advisory_text', 'boundaries']
+  def is_accessible(self):
+    return login.current_user.is_authenticated
+
+class boundary_view(base_view):
+  column_list = ['boundary_name', 'wkt_boundary', 'row_entry_date', 'row_update_date']
+  form_columns = ['boundary_name', 'wkt_boundary']
+
+  def is_accessible(self):
+    return login.current_user.is_authenticated
+
+class site_extent_view(base_view):
+  column_list = ['sample_site', 'extent_name', 'wkt_extent', 'row_entry_date', 'row_update_date']
+  form_columns = ['sample_site', 'extent_name', 'wkt_extent']
+
+  def is_accessible(self):
+    return login.current_user.is_authenticated
+
