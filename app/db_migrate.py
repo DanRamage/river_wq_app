@@ -123,6 +123,19 @@ class Advisory_Limits(db.Model):
 
   site = db.relationship('Project_Area', backref='advisory_limits')
 
+class Boundary(db.Model):
+  __table_name__ = 'boundary'
+  id = db.Column(db.Integer, primary_key=True)
+  row_entry_date = db.Column(db.String(32))
+  row_update_date = db.Column(db.String(32))
+  boundary_name  = db.Column(db.String(128), nullable=False)
+  wkt_boundary = db.Column(db.Text, nullable=True)
+
+  project_site_id = db.Column('project_site_id', db.Integer, db.ForeignKey('project_area.id'))
+  project_site = db.relationship('Project_Area', backref='boundary')
+
+  def __str__(self):
+    return self.boundary_name
 
 class Boundary_Mapper(db.Model):
   __table_name__ = 'boundary_mapper'
@@ -155,17 +168,6 @@ class Sample_Site(db.Model):
 
   def __str__(self):
     return self.site_name
-
-class Boundary(db.Model):
-  __table_name__ = 'boundary'
-  id = db.Column(db.Integer, primary_key=True)
-  row_entry_date = db.Column(db.String(32))
-  row_update_date = db.Column(db.String(32))
-  boundary_name  = db.Column(db.String(128), nullable=False)
-  wkt_boundary = db.Column(db.Text, nullable=True)
-
-  #site_id = db.Column(db.Integer, db.ForeignKey(Sample_Site.id))
-  #sample_site_name = db.relationship('Sample_Site', backref='boundaries', foreign_keys=[site_id])
 
 
 class Site_Extent(db.Model):

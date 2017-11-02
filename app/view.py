@@ -20,7 +20,13 @@ from twilio.twiml.voice_response import VoiceResponse
 
 from app import db
 from admin_models import User
-from wq_models import Project_Area, Site_Message, Project_Info_Page, Advisory_Limits
+from wq_models import Project_Area, \
+  Site_Message, \
+  Project_Info_Page, \
+  Advisory_Limits, \
+  Sample_Site,\
+  Site_Extent,\
+  Boundary
 
 if not DEBUG_DATA_FILES:
   SC_RIVERS_PREDICTIONS_FILE='/home/xeniaprod/feeds/sc_rivers/Predictions.json'
@@ -70,6 +76,7 @@ class SitePage(View):
     start_time = time.time()
     program_info = {}
     try:
+
       rec = db.session.query(Project_Info_Page)\
         .join(Project_Area, Project_Area.id == Project_Info_Page.site_id)\
         .filter(Project_Area.area_name == self.site_name).first()
@@ -544,8 +551,8 @@ class sample_site_view(base_view):
     return login.current_user.is_authenticated
 
 class boundary_view(base_view):
-  column_list = ['boundary_name', 'wkt_boundary', 'row_entry_date', 'row_update_date']
-  form_columns = ['boundary_name', 'wkt_boundary']
+  column_list = ['project_site', 'boundary_name', 'wkt_boundary', 'row_entry_date', 'row_update_date']
+  form_columns = ['project_site', 'boundary_name', 'wkt_boundary']
 
   def is_accessible(self):
     return login.current_user.is_authenticated

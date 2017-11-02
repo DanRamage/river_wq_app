@@ -92,6 +92,9 @@ class Boundary(db.Model):
   boundary_name  = db.Column(db.String(128), nullable=False)
   wkt_boundary = db.Column(db.Text, nullable=True)
 
+  project_site_id = db.Column('project_site_id', db.Integer, db.ForeignKey('project_area.id'))
+  project_site = db.relationship('Project_Area', backref='boundary')
+
   def __str__(self):
     return self.boundary_name
 
