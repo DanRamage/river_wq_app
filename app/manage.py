@@ -55,9 +55,6 @@ def build_sites(params):
           boundaries = []
           for boundary in site.boundaries:
             boundaries.append(boundary.boundary_name)
-          #extents = []
-          #for extent in site.extents:
-          #  extents.append(extent.wkt_extent)
           row = '\"%s\",%s,%s,\"%s\",%s,\"%s\",\"%s\"\n' % (site.wkt_location,
                                        site.epa_id,
                                        site.site_name,
