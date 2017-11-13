@@ -1,4 +1,4 @@
-from app import create_app, build_init_db
+from app import create_app, create_user
 import optparse
 from config import *
 
@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
   if(options.user is not None):
     if(options.password is not None):
-      build_init_db(options.user, options.password)
+      create_user(options.user, options.password)
     else:
       print("Must provide password")
   else:

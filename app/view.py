@@ -1,12 +1,12 @@
 import os
 from flask import request, redirect, render_template, current_app, url_for, g
 from flask.views import View, MethodView
-from flask_admin import BaseView
-from wtforms import form, fields, validators
 import flask_admin as admin
 import flask_login as login
 from flask_admin.contrib import sqla
 from flask_admin import helpers, expose
+from flask_security import Security, SQLAlchemyUserDatastore, \
+    login_required, current_user
 import time
 import simplejson
 import geojson
@@ -14,7 +14,7 @@ from datetime import datetime
 from wtforms import form, fields, validators
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import DEBUG_DATA_FILES, PYCHARM_DEBUG
-#from admin_models import User
+from admin_models import User
 from twilio.twiml.voice_response import VoiceResponse
 
 
@@ -47,7 +47,7 @@ if PYCHARM_DEBUG:
 
 class MaintenanceMode(View):
   def dispatch_request(self):
-    current_app.logger.debug('MaintenanceMode rendered')
+    current_app.logger.debug('     MaintenanceMode rendered')
     return render_template("MaintenanceMode.html")
 
 
@@ -373,17 +373,18 @@ class RegistrationForm(form.Form):
       if db.session.query(User).filter_by(login=self.login.data).count() > 0:
         raise validators.ValidationError('Duplicate username')
 """
-# Create customized model view class
-class UserModelView(sqla.ModelView):
-  def create_model(self, form):
-    try:
-      start_time = time.time()
-      current_app.logger.debug('IP: %s UserModelView create_model started.' % (request.remote_addr))
 
-      model = self.model()
-      form.populate_obj(model)
-      pwd = model.password
-      model.password = generate_password_hash(pwd)
+
+class base_view(sqla.ModelView):
+  def create_model(self, form):
+    start_time = time.time()
+    try:
+      current_app.logger.debug("IP: %s User: %s create_model started" % (request.remote_addr, login.current_user))
+      model = sqla.ModelView.create_model(self, form)
+
+      entry_time = datetime.utcnow()
+      model.row_entry_date = entry_time.strftime("%Y-%m-%d %H:%M:%S")
+
       self.session.add(model)
       self._on_model_change(form, model, True)
       self.session.commit()
@@ -394,30 +395,95 @@ class UserModelView(sqla.ModelView):
     else:
       self.after_model_change(form, model, True)
 
+    current_app.logger.debug("IP: %s User: %s base_view create_model finished in %f seconds" % (request.remote_addr, login.current_user, time.time() - start_time))
+    return model
+
+  def update_model(self, form, model):
+    start_time = time.time()
+    current_app.logger.debug("IP: %s User: %s base_view update_model started" % \
+                             (request.remote_addr, current_user.login))
+
+    update_time = datetime.utcnow()
+    if model.row_entry_date is None:
+      model.row_entry_date = update_time.strftime("%Y-%m-%d %H:%M:%S")
+    model.row_update_date = update_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    ret_val = sqla.ModelView.update_model(self, form, model)
+
+    current_app.logger.debug("IP: %s User: %s update_model finished in %f seconds" % (request.remote_addr, current_user.login, time.time() - start_time))
+
+    return ret_val
+
+  def is_accessible(self):
+    if not current_user.is_active or not current_user.is_authenticated:
+      return False
+
+    if current_user.has_role('superuser'):
+      return True
+
+    return False
+
+# Create customized model view class
+class AdminUserModelView(base_view):
+  #form_excluded_coluns = ('password')
+  form_extra_fields = {
+    'password': fields.PasswordField('Password')
+  }
+  column_list = ('login', 'first_name', 'last_name', 'email', 'active', 'roles', 'row_entry_date', 'row_update_date')
+  form_columns = ('login', 'first_name', 'last_name', 'email', 'password', 'active', 'roles')
+  """
+  @expose('/edit')
+  def edit_view(self):
+    return super(UserModelView, self).edit_view()
+  """
+  def create_model(self, form):
+    #try:
+    start_time = time.time()
+    current_app.logger.debug('IP: %s UserModelView create_model started.' % (request.remote_addr))
+    pwd = form.password.data
+    form.password.data = generate_password_hash(form.password.data)
+    model = base_view.create_model(self, form)
     current_app.logger.debug('IP: %s UserModelView create_model finished in %f seconds.' % (request.remote_addr, time.time() - start_time))
     return model
   def update_model(self, form, model):
-    try:
-      start_time = time.time()
-      current_app.logger.debug('IP: %s UserModelView update_model started.' % (request.remote_addr))
+    #try:
+    start_time = time.time()
+    current_app.logger.debug('IP: %s User: %s %s.update_model started.' % (request.remote_addr, current_user.login, self.__class__.__name__))
 
-      form.populate_obj(model)
-      pwd = model.password
-      model.password = generate_password_hash(pwd)
-      self.session.add(model)
-      self._on_model_change(form, model, True)
-      self.session.commit()
-    except Exception as ex:
-      current_app.logger.exception(ex)
-      self.session.rollback()
-      return False
-    else:
-      self.after_model_change(form, model, True)
+    hashed_pwd = generate_password_hash(form.password.data)
+    if hashed_pwd != model.password:
+      form.password.data = hashed_pwd
 
-    current_app.logger.debug('IP: %s UserModelView update_model finished in %f seconds.' % (request.remote_addr, time.time() - start_time))
+    ret_val = base_view.update_model(self, form, model)
+
+    current_app.logger.debug('IP: %s User: %s %s.update_model finished in %f seconds.' % (request.remote_addr, current_user.login, self.__class__.__name__, time.time() - start_time))
+    return ret_val
+  """
+  def get_query(self):
+    roles = login.current_user.roles
+    for role in roles:
+      if role.name == 'superuser':
+        return super(UserModelView, self).get_query()
+
+    return super(UserModelView, self).get_query().filter(User.login == login.current_user.login)
+  """
+
+class BasicUserModelView(AdminUserModelView):
+  column_list = ('login', 'first_name', 'last_name', 'email')
+  form_columns = ('login', 'first_name', 'last_name', 'email', 'password')
+
+  def get_query(self):
+    return super(AdminUserModelView, self).get_query().filter(User.login == login.current_user.login)
 
   def is_accessible(self):
-    return login.current_user.is_authenticated
+    if current_user.is_active and current_user.is_authenticated and not current_user.has_role('superuser'):
+      return True
+    return False
+
+class RolesView(base_view):
+  column_list = ['name', 'description']
+  form_columns = ['name', 'description']
+
 
 
 # Create customized index view class that handles login & registration
@@ -477,11 +543,48 @@ class MyAdminIndexView(admin.AdminIndexView):
         login.logout_user()
         return redirect(url_for('.index'))
 
-class base_view(sqla.ModelView):
+
+class project_type_view(base_view):
+  column_list = ['name', 'row_entry_date', 'row_update_date']
+  form_columns = ['name']
+
+class project_area_view(base_view):
+  column_list = ['area_name', 'display_name', 'row_entry_date', 'row_update_date']
+  form_columns = ['area_name', 'display_name']
+
+
+
+class site_message_view(base_view):
+  column_list = ['site', 'message', 'site_message_level', 'row_entry_date', 'row_update_date']
+  form_columns = ['site', 'message', 'site_message_level']
+
+  def is_accessible(self):
+    if current_user.is_active and current_user.is_authenticated:
+      return True
+    return False
+
+class site_message_level_view(base_view):
+  column_list = ['message_level', 'row_entry_date', 'row_update_date']
+  form_columns = ['message_level']
+
+"""
+class project_info_view(base_view):
+  def is_accessible(self):
+    return login.current_user.is_authenticated
+"""
+class advisory_limits_view(base_view):
+  column_list = ['site', 'min_limit', 'max_limit', 'icon', 'limit_type', 'row_entry_date', 'row_update_date']
+  form_columns = ['site', 'min_limit', 'max_limit', 'icon', 'limit_type']
+
+class sample_site_view(base_view):
+  column_list = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'epa_id', 'county', 'issues_advisories', 'advisory_text', 'boundaries', 'row_entry_date', 'row_update_date']
+  form_columns = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'epa_id', 'county', 'issues_advisories', 'advisory_text', 'boundaries']
+
   def create_model(self, form):
     try:
       model = self.model()
       form.populate_obj(model)
+      model.wkt_location = "POINT(%s %s)" % (form.longitude.data, form.latitude.data)
       model.user = login.current_user
       entry_time = datetime.utcnow()
       model.row_entry_date = entry_time.strftime("%Y-%m-%d %H:%M:%S")
@@ -498,69 +601,32 @@ class base_view(sqla.ModelView):
     return model
 
   def update_model(self, form, model):
-    try:
-      update_time = datetime.utcnow()
-      if model.row_entry_date is None:
-        model.row_entry_date = update_time.strftime("%Y-%m-%d %H:%M:%S")
-      model.row_update_date = update_time.strftime("%Y-%m-%d %H:%M:%S")
-    except Exception as ex:
-      current_app.logger.exception(ex)
-      self.session.rollback()
-    return sqla.ModelView.update_model(self, form, model)
-
-class project_type_view(base_view):
-  column_list = ['name', 'row_entry_date', 'row_update_date']
-  form_columns = ['name']
-  def is_accessible(self):
-    return login.current_user.is_authenticated
-
-class project_area_view(base_view):
-  column_list = ['area_name', 'display_name', 'row_entry_date', 'row_update_date']
-  form_columns = ['area_name', 'display_name']
-
-  def is_accessible(self):
-    return login.current_user.is_authenticated
-
-
-class site_message_view(base_view):
-  column_list = ['site', 'message', 'row_entry_date', 'row_update_date']
-  form_columns = ['site', 'message']
-  def is_accessible(self):
-    return login.current_user.is_authenticated
-
-class site_message_level_view(base_view):
-  column_list = ['message_level', 'row_entry_date', 'row_update_date']
-  form_columns = ['message_level']
-  def is_accessible(self):
-    return login.current_user.is_authenticated
-
-class project_info_view(base_view):
-  def is_accessible(self):
-    return login.current_user.is_authenticated
-
-class advisory_limits_view(base_view):
-  column_list = ['site', 'min_limit', 'max_limit', 'icon', 'limit_type', 'row_entry_date', 'row_update_date']
-  form_columns = ['site', 'min_limit', 'max_limit', 'icon', 'limit_type']
-  def is_accessible(self):
-    return login.current_user.is_authenticated
-
-class sample_site_view(base_view):
-  column_list = ['project_site', 'site_name', 'wkt_location', 'description', 'epa_id', 'county', 'issues_advisories', 'advisory_text', 'boundaries', 'row_entry_date', 'row_update_date']
-  form_columns = ['project_site', 'site_name', 'wkt_location', 'description', 'epa_id', 'county', 'issues_advisories', 'advisory_text', 'boundaries']
-  def is_accessible(self):
-    return login.current_user.is_authenticated
+    if len(model.wkt_location) and form.longitude.data is None and form.latitude.data is None:
+      points = model.wkt_location.replace('POINT(', '').replace(')', '')
+      longitude,latitude = points.split(' ')
+      form.longitude.data = float(longitude)
+      form.latitude.data = float(latitude)
+    else:
+      wkt_location = "POINT(%s %s)" % (form.longitude.data, form.latitude.data)
+      model.wkt_location = wkt_location
+    base_view.update_model(self, form, model)
 
 class boundary_view(base_view):
   column_list = ['project_site', 'boundary_name', 'wkt_boundary', 'row_entry_date', 'row_update_date']
   form_columns = ['project_site', 'boundary_name', 'wkt_boundary']
 
-  def is_accessible(self):
-    return login.current_user.is_authenticated
 
 class site_extent_view(base_view):
   column_list = ['sample_site', 'extent_name', 'wkt_extent', 'row_entry_date', 'row_update_date']
   form_columns = ['sample_site', 'extent_name', 'wkt_extent']
 
-  def is_accessible(self):
-    return login.current_user.is_authenticated
 
+
+class popup_site_view(base_view):
+  column_list = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'advisory_text']
+  form_columns = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'advisory_text']
+
+  def is_accessible(self):
+    if current_user.is_active and current_user.is_authenticated:
+      return True
+    return False

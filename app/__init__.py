@@ -45,22 +45,23 @@ def create_app(config_file):
 def build_flask_admin(app):
 
   from view import MyAdminIndexView, \
-    UserModelView, \
+    AdminUserModelView, \
+    BasicUserModelView, \
+    RolesView,\
     project_area_view, \
     site_message_view, \
     project_type_view, \
-    project_info_view, \
     advisory_limits_view, \
     site_message_level_view, \
     sample_site_view, \
     boundary_view, \
-    site_extent_view
+    site_extent_view, \
+    popup_site_view
 
-  from admin_models import User
+  from admin_models import User, Role
   from wq_models import Project_Area, \
     Site_Message, \
     Project_Type, \
-    Project_Info_Page, \
     Advisory_Limits, \
     Site_Message_Level, \
     Sample_Site, \
@@ -69,19 +70,22 @@ def build_flask_admin(app):
 
   login_manager.init_app(app)
   # Create admin
-  admin = flask_admin.Admin(app, 'River WQ Administation', index_view=MyAdminIndexView(), base_template='my_master.html')
+  admin = flask_admin.Admin(app, 'River WQ Administation', index_view=MyAdminIndexView(), base_template='my_master.html', template_mode="bootstrap3")
 
   # Add view
-  admin.add_view(UserModelView(User, db.session))
+  admin.add_view(AdminUserModelView(User, db.session, endpoint="admin_user_view"))
+  admin.add_view(BasicUserModelView(User, db.session, endpoint="basic_user_view"))
+  admin.add_view(RolesView(Role, db.session))
   admin.add_view(project_type_view(Project_Type, db.session, name="Site Type"))
   admin.add_view(project_area_view(Project_Area, db.session, name="Area"))
   admin.add_view(site_message_view(Site_Message, db.session, name="Message"))
   admin.add_view(site_message_level_view(Site_Message_Level, db.session, name="Message Level"))
-  #admin.add_view(project_info_view(Project_Info_Page, db.session, name="Program Info"))
   admin.add_view(advisory_limits_view(Advisory_Limits, db.session, name="Advisory Limits"))
   admin.add_view(sample_site_view(Sample_Site, db.session, name="Sample Sites"))
   admin.add_view(boundary_view(Boundary, db.session, name="Boundaries"))
   admin.add_view(site_extent_view(Site_Extent, db.session, name="Site Extents"))
+
+  admin.add_view(popup_site_view(Sample_Site, db.session, name="Popup Site", endpoint="popup_site_view"))
 
   return
 
@@ -162,6 +166,10 @@ def load_user(user_id):
   return db.session.query(User).get(user_id)
 
 
+def create_user(user, password):
+  test_user = User(login=user, password=generate_password_hash(password))
+  db.session.add(test_user)
+  db.session.commit()
 
 def build_init_db(user, password):
 

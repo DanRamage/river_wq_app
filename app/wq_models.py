@@ -47,7 +47,7 @@ class Site_Message(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   row_entry_date = db.Column(db.String(32))
   row_update_date = db.Column(db.String(32))
-  site_id = db.Column(db.Integer, db.ForeignKey('project_area.id'))
+  site_id = db.Column(db.Integer, db.ForeignKey('project_area.id'), unique=True)
   message_lvl_id = db.Column(db.Integer, db.ForeignKey('site_message_level.id'))
   message = db.Column(db.String(512))
 
@@ -114,7 +114,10 @@ class Sample_Site(db.Model):
   project_site_id = db.Column('project_site_id', db.Integer, db.ForeignKey('project_area.id'))
   project_site = db.relationship('Project_Area', backref='sample_sites')
 
+  latitude = db.Column(db.Float, nullable=True)
+  longitude = db.Column(db.Float, nullable=True)
   wkt_location = db.Column(db.Text, nullable=False)
+
   site_name = db.Column(db.String(128), nullable=False)
   description = db.Column(db.Text, nullable=True)
   epa_id = db.Column(db.String(32), nullable=True)
