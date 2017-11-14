@@ -376,6 +376,22 @@ class RegistrationForm(form.Form):
 
 
 class base_view(sqla.ModelView):
+
+  def on_model_change(self, form, model, is_created):
+    start_time = time.time()
+    current_app.logger.debug("IP: %s User: %s on_model_change started" % (request.remote_addr, current_user.login))
+
+    entry_time = datetime.utcnow()
+    if is_created:
+      model.row_entry_date = entry_time.strftime("%Y-%m-%d %H:%M:%S")
+    else:
+      model.row_update_date = entry_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    sqla.ModelView.on_model_change(self, form, model, is_created)
+
+    current_app.logger.debug("IP: %s User: %s on_model_change finished in %f seconds" % (request.remote_addr, current_user.login, time.time() - start_time))
+
+  """
   def create_model(self, form):
     start_time = time.time()
     try:
@@ -413,7 +429,7 @@ class base_view(sqla.ModelView):
     current_app.logger.debug("IP: %s User: %s update_model finished in %f seconds" % (request.remote_addr, current_user.login, time.time() - start_time))
 
     return ret_val
-
+  """
   def is_accessible(self):
     if not current_user.is_active or not current_user.is_authenticated:
       return False
@@ -431,10 +447,18 @@ class AdminUserModelView(base_view):
   }
   column_list = ('login', 'first_name', 'last_name', 'email', 'active', 'roles', 'row_entry_date', 'row_update_date')
   form_columns = ('login', 'first_name', 'last_name', 'email', 'password', 'active', 'roles')
-  """
-  @expose('/edit')
-  def edit_view(self):
-    return super(UserModelView, self).edit_view()
+
+  def on_model_change(self, form, model, is_created):
+    start_time = time.time()
+    current_app.logger.debug('IP: %s User: %s AdminUserModelView on_model_change started.' % (request.remote_addr, current_user.login))
+    if is_created:
+      model.password = generate_password_hash(form.password.data)
+    else:
+      hashed_pwd = generate_password_hash(form.password.data)
+      if hashed_pwd != model.password:
+        model.password = hashed_pwd
+
+    current_app.logger.debug('IP: %s User: %s AdminUserModelView create_model finished in %f seconds.' % (request.remote_addr, current_user.login, time.time() - start_time))
   """
   def create_model(self, form):
     #try:
@@ -459,18 +483,11 @@ class AdminUserModelView(base_view):
     current_app.logger.debug('IP: %s User: %s %s.update_model finished in %f seconds.' % (request.remote_addr, current_user.login, self.__class__.__name__, time.time() - start_time))
     return ret_val
   """
-  def get_query(self):
-    roles = login.current_user.roles
-    for role in roles:
-      if role.name == 'superuser':
-        return super(UserModelView, self).get_query()
-
-    return super(UserModelView, self).get_query().filter(User.login == login.current_user.login)
-  """
-
 class BasicUserModelView(AdminUserModelView):
   column_list = ('login', 'first_name', 'last_name', 'email')
   form_columns = ('login', 'first_name', 'last_name', 'email', 'password')
+  can_create = False #Don't allow a basic user ability to add a new user.
+  can_delete = False #Don't allow user to delete records.
 
   def get_query(self):
     return super(AdminUserModelView, self).get_query().filter(User.login == login.current_user.login)
@@ -577,9 +594,32 @@ class advisory_limits_view(base_view):
   form_columns = ['site', 'min_limit', 'max_limit', 'icon', 'limit_type']
 
 class sample_site_view(base_view):
-  column_list = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'epa_id', 'county', 'issues_advisories', 'advisory_text', 'boundaries', 'row_entry_date', 'row_update_date']
-  form_columns = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'epa_id', 'county', 'issues_advisories', 'advisory_text', 'boundaries']
+  column_list = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'epa_id', 'county', 'issues_advisories', 'advisory_text', 'boundaries', 'temporary_site', 'row_entry_date', 'row_update_date']
+  form_columns = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'epa_id', 'county', 'issues_advisories', 'advisory_text', 'boundaries', 'temporary_site']
 
+  def on_model_change(self, form, model, is_created):
+    start_time = time.time()
+    current_app.logger.debug('IP: %s User: %s popup_site_view on_model_change started.' % (request.remote_addr, current_user.login))
+
+    if is_created:
+      entry_time = datetime.utcnow()
+      model.row_entry_date = entry_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    model.user = login.current_user
+
+    if len(model.wkt_location) and form.longitude.data is None and form.latitude.data is None:
+      points = model.wkt_location.replace('POINT(', '').replace(')', '')
+      longitude,latitude = points.split(' ')
+      form.longitude.data = float(longitude)
+      form.latitude.data = float(latitude)
+    else:
+      wkt_location = "POINT(%s %s)" % (form.longitude.data, form.latitude.data)
+      model.wkt_location = wkt_location
+
+    base_view.on_model_change(self, form, model, is_created)
+
+    current_app.logger.debug('IP: %s User: %s popup_site_view on_model_change finished in %f seconds.' % (request.remote_addr, current_user.login, time.time() - start_time))
+  """
   def create_model(self, form):
     try:
       model = self.model()
@@ -610,6 +650,7 @@ class sample_site_view(base_view):
       wkt_location = "POINT(%s %s)" % (form.longitude.data, form.latitude.data)
       model.wkt_location = wkt_location
     base_view.update_model(self, form, model)
+  """
 
 class boundary_view(base_view):
   column_list = ['project_site', 'boundary_name', 'wkt_boundary', 'row_entry_date', 'row_update_date']
@@ -623,8 +664,22 @@ class site_extent_view(base_view):
 
 
 class popup_site_view(base_view):
+
   column_list = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'advisory_text']
   form_columns = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'advisory_text']
+
+  def on_model_change(self, form, model, is_created):
+    start_time = time.time()
+    current_app.logger.debug('IP: %s User: %s popup_site_view on_model_change started.' % (request.remote_addr, current_user.login))
+
+    model.temporary_site = True
+    model.wkt_location = "POINT(%s %s)" % (form.longitude.data, form.latitude.data)
+    base_view.on_model_change(self, form, model, is_created)
+
+    current_app.logger.debug('IP: %s User: %s popup_site_view on_model_change finished in %f seconds.' % (request.remote_addr, current_user.login, time.time() - start_time))
+
+  def get_query(self):
+    return super(popup_site_view, self).get_query().filter(Sample_Site.temporary_site == True)
 
   def is_accessible(self):
     if current_user.is_active and current_user.is_authenticated:

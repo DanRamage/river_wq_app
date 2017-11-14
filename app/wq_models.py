@@ -124,7 +124,7 @@ class Sample_Site(db.Model):
   county = db.Column(db.String(32), nullable=True)
   issues_advisories = db.Column(db.Boolean, nullable=True)
   advisory_text = db.Column(db.String(32), nullable=True)
-
+  temporary_site = db.Column(db.Boolean, nullable=False)
   boundaries = db.relationship(Boundary,
                              secondary='boundary__mapper',
                              primaryjoin=(Boundary_Mapper.sample_site_id == id),
