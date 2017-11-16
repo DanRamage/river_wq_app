@@ -122,8 +122,15 @@ class Sample_Site(db.Model):
   description = db.Column(db.Text, nullable=True)
   epa_id = db.Column(db.String(32), nullable=True)
   county = db.Column(db.String(32), nullable=True)
+  # Some stations may measure water quality but can't issue a swim advisory.
   issues_advisories = db.Column(db.Boolean, nullable=True)
-  advisory_text = db.Column(db.String(32), nullable=True)
+  #Station currently has an advisory on going.This is normally taken care of in the prediction engine, but when we have popup
+  #stations, we want to be able to set that the staiton has an advisory so the map shows the appropriate icon.
+  has_current_advisory = db.Column(db.Boolean, nullable=True)
+  #This is a unique per station message.
+  advisory_text = db.Column(db.Text, nullable=True)
+  #This is used internally(not used on the map) for the most part. Helps denote the site is not permanent. We use this to filter
+  #on for the basic user view to allow a non superuser to enter popup sites while not being able to modify permanent sites.
   temporary_site = db.Column(db.Boolean, nullable=False)
   boundaries = db.relationship(Boundary,
                              secondary='boundary__mapper',

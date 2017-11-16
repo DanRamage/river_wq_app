@@ -161,7 +161,8 @@ class Sample_Site(db.Model):
   epa_id = db.Column(db.String(32), nullable=True)
   county = db.Column(db.String(32), nullable=True)
   issues_advisories = db.Column(db.Boolean, nullable=True)
-  advisory_text = db.Column(db.String(32), nullable=True)
+  has_current_advisory = db.Column(db.Boolean, nullable=True)
+  advisory_text = db.Column(db.Text, nullable=True)
   temporary_site = db.Column(db.Boolean, nullable=True)
 
   boundary = db.relationship("Boundary",

@@ -33,17 +33,66 @@ if not DEBUG_DATA_FILES:
   SC_RIVERS_ADVISORIES_FILE='/home/xeniaprod/feeds/sc_rivers/beachAdvisoryResults.json'
   SC_RIVERS_STATIONS_DATA_DIR='/home/xeniaprod/feeds/sc_rivers/monitorstations'
   VOICEMAIL_FILE='/home/xeniaprod/feeds/sc_rivers/voicemail.json'
+  SALUDA_SAMPLE_SITES_FILE = '/home/xeniaprod/feeds/sc_rivers/sample_sites_boundary.csv'
+  SALUDA_BOUNDARIES_FILE = '/home/xeniaprod/feeds/sc_rivers/sc_rivers_boundaries.csv'
+
 else:
   SC_RIVERS_PREDICTIONS_FILE='/home/xeniaprod/feeds/sc_rivers/debug/Predictions.json'
   SC_RIVERS_ADVISORIES_FILE='/home/xeniaprod/feeds/sc_rivers/debug/beachAdvisoryResults.json'
   SC_RIVERS_STATIONS_DATA_DIR='/home/xeniaprod/feeds/sc_rivers/debug/monitorstations'
   VOICEMAIL_FILE='/home/xeniaprod/feeds/sc_rivers/voicemail.json'
+  SALUDA_SAMPLE_SITES_FILE = '/home/xeniaprod/feeds/sc_rivers/sample_sites_boundary.csv'
+  SALUDA_BOUNDARIES_FILE = '/home/xeniaprod/feeds/sc_rivers/sc_rivers_boundaries.csv'
 
 if PYCHARM_DEBUG:
   SC_RIVERS_PREDICTIONS_FILE='/Users/danramage/tmp/sc_rivers/Predictions.json'
   SC_RIVERS_ADVISORIES_FILE='/Users/danramage/tmp/sc_rivers/beachAdvisoryResults.json'
   SC_RIVERS_STATIONS_DATA_DIR='/Users/danramage/tmp/sc_rivers/monitorstations'
   VOICEMAIL_FILE='/Users/danramage/tmp/voicemail.json'
+  SALUDA_SAMPLE_SITES_FILE = '/Users/danramage/tmp/sc_rivers/sample_sites_boundary.csv'
+  SALUDA_BOUNDARIES_FILE = '/Users/danramage/tmp/sc_rivers/sc_rivers_boundaries.csv'
+
+
+def build_feature(sample_site_rec, sample_date, values):
+  beachadvisories = {
+    'date': '',
+    'station': sample_site_rec.site_name,
+    'value': ''
+  }
+  if len(values):
+    beachadvisories = {
+      'date': sample_date,
+      'station': sample_site_rec.site_name,
+      'value': values
+    }
+  feature = {
+    'type': 'Feature',
+    'geometry': {
+      'type': 'Point',
+      'coordinates': [sample_site_rec.longitude, sample_site_rec.latitude]
+    },
+    'properties': {
+      'locale': sample_site_rec.description,
+      'sign': False,
+      'station': sample_site_rec.site_name,
+      'epaid': sample_site_rec.epa_id,
+      'beach': sample_site_rec.county,
+      'desc': sample_site_rec.description,
+      'has_advisory': sample_site_rec.has_current_advisory,
+      'station_message': sample_site_rec.advisory_text,
+      'len': '',
+      'test': {
+        'beachadvisories': beachadvisories
+      }
+    }
+  }
+  extents_json = None
+  if len(sample_site_rec.extents):
+    extents_json = geojson.Feature(geometry=sample_site_rec.extents[0].wkt_extent, properties={})
+    feature['properties']['extents_geometry'] = extents_json
+
+  return feature
+
 
 class MaintenanceMode(View):
   def dispatch_request(self):
@@ -131,6 +180,20 @@ class SitePage(View):
         'prediction_data': simplejson.loads(prediction_data),
         'advisory_data': simplejson.loads(advisory_data)
       }
+      #Query the database to see if we have any temporary popup sites.
+      # .join(Site_Extent, Site_Extent.site_id == Sample_Site.id) \
+      #        .join(Sample_Site.extents)\
+      #  .options(db.joinedload(Sample_Site.extents))\
+
+      popup_sites = db.session.query(Sample_Site) \
+        .join(Project_Area, Project_Area.id == Sample_Site.project_site_id) \
+        .filter(Project_Area.area_name == self.site_name)\
+        .filter(Sample_Site.temporary_site == True).all()
+      if len(popup_sites):
+        advisory_data_features = data['advisory_data']['features']
+        for site in popup_sites:
+          feature = build_feature(site, site.row_entry_date, [])
+          advisory_data_features.append(feature)
     except Exception as e:
       current_app.logger.exception(e)
     current_app.logger.debug('get_data finished in %f seconds' % (time.time()-start_time))
@@ -307,7 +370,7 @@ class StationDataAPI(MethodView):
         for ndx in range(len(advisoryList)):
           try:
             tst_date_obj = datetime.strptime(advisoryList[ndx]['date'], "%Y-%m-%d")
-          except ValueError, e:
+          except ValueError as e:
             tst_date_obj = datetime.strptime(advisoryList[ndx]['date'], "%Y-%m-%d %H:%M:%S")
 
           if tst_date_obj >= start_date_obj:
@@ -374,9 +437,11 @@ class RegistrationForm(form.Form):
         raise validators.ValidationError('Duplicate username')
 """
 
-
 class base_view(sqla.ModelView):
-
+  """
+  This view is used to update some common columns across all the tables used.
+  Now it's mostly the row_entry_date and row_update_date.
+  """
   def on_model_change(self, form, model, is_created):
     start_time = time.time()
     current_app.logger.debug("IP: %s User: %s on_model_change started" % (request.remote_addr, current_user.login))
@@ -431,6 +496,11 @@ class base_view(sqla.ModelView):
     return ret_val
   """
   def is_accessible(self):
+    """
+    This checks to make sure the user is active and authenticated and is a superuser. Otherwise
+    the view is not accessible.
+    :return:
+    """
     if not current_user.is_active or not current_user.is_authenticated:
       return False
 
@@ -441,7 +511,9 @@ class base_view(sqla.ModelView):
 
 # Create customized model view class
 class AdminUserModelView(base_view):
-  #form_excluded_coluns = ('password')
+  """
+  This view handles the administrative user editing/creation of users.
+  """
   form_extra_fields = {
     'password': fields.PasswordField('Password')
   }
@@ -449,47 +521,38 @@ class AdminUserModelView(base_view):
   form_columns = ('login', 'first_name', 'last_name', 'email', 'password', 'active', 'roles')
 
   def on_model_change(self, form, model, is_created):
+    """
+    If we're creating a new user, hash the password entered, if we're updating, check if password
+    has changed and then hash that.
+    :param form:
+    :param model:
+    :param is_created:
+    :return:
+    """
     start_time = time.time()
     current_app.logger.debug('IP: %s User: %s AdminUserModelView on_model_change started.' % (request.remote_addr, current_user.login))
+    #Hash the password text if we're creating a new user.
     if is_created:
       model.password = generate_password_hash(form.password.data)
+    #If this is an update, check to see if password has changed and if so hash the form password.
     else:
       hashed_pwd = generate_password_hash(form.password.data)
       if hashed_pwd != model.password:
         model.password = hashed_pwd
 
     current_app.logger.debug('IP: %s User: %s AdminUserModelView create_model finished in %f seconds.' % (request.remote_addr, current_user.login, time.time() - start_time))
-  """
-  def create_model(self, form):
-    #try:
-    start_time = time.time()
-    current_app.logger.debug('IP: %s UserModelView create_model started.' % (request.remote_addr))
-    pwd = form.password.data
-    form.password.data = generate_password_hash(form.password.data)
-    model = base_view.create_model(self, form)
-    current_app.logger.debug('IP: %s UserModelView create_model finished in %f seconds.' % (request.remote_addr, time.time() - start_time))
-    return model
-  def update_model(self, form, model):
-    #try:
-    start_time = time.time()
-    current_app.logger.debug('IP: %s User: %s %s.update_model started.' % (request.remote_addr, current_user.login, self.__class__.__name__))
 
-    hashed_pwd = generate_password_hash(form.password.data)
-    if hashed_pwd != model.password:
-      form.password.data = hashed_pwd
-
-    ret_val = base_view.update_model(self, form, model)
-
-    current_app.logger.debug('IP: %s User: %s %s.update_model finished in %f seconds.' % (request.remote_addr, current_user.login, self.__class__.__name__, time.time() - start_time))
-    return ret_val
-  """
 class BasicUserModelView(AdminUserModelView):
+  """
+  Basic user view. A simple user only gets access to their data record to edit. No creating or deleting.
+  """
   column_list = ('login', 'first_name', 'last_name', 'email')
   form_columns = ('login', 'first_name', 'last_name', 'email', 'password')
   can_create = False #Don't allow a basic user ability to add a new user.
   can_delete = False #Don't allow user to delete records.
 
   def get_query(self):
+    #Only return the record that matches the logged in user.
     return super(AdminUserModelView, self).get_query().filter(User.login == login.current_user.login)
 
   def is_accessible(self):
@@ -498,6 +561,9 @@ class BasicUserModelView(AdminUserModelView):
     return False
 
 class RolesView(base_view):
+  """
+  View into the user Roles table.
+  """
   column_list = ['name', 'description']
   form_columns = ['name', 'description']
 
@@ -594,10 +660,21 @@ class advisory_limits_view(base_view):
   form_columns = ['site', 'min_limit', 'max_limit', 'icon', 'limit_type']
 
 class sample_site_view(base_view):
-  column_list = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'epa_id', 'county', 'issues_advisories', 'advisory_text', 'boundaries', 'temporary_site', 'row_entry_date', 'row_update_date']
-  form_columns = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'epa_id', 'county', 'issues_advisories', 'advisory_text', 'boundaries', 'temporary_site']
+  """
+  View for the Sample_Site table.
+  """
+  column_list = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'epa_id', 'county', 'issues_advisories', 'has_current_advisory', 'advisory_text', 'boundaries', 'temporary_site', 'row_entry_date', 'row_update_date']
+  form_columns = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'epa_id', 'county', 'issues_advisories', 'has_current_advisory', 'advisory_text', 'boundaries', 'temporary_site']
 
   def on_model_change(self, form, model, is_created):
+    """
+    When a new record is created or editing, we want to take the values in the lat/long field
+    and populate the wkt_location field.
+    :param form:
+    :param model:
+    :param is_created:
+    :return:
+    """
     start_time = time.time()
     current_app.logger.debug('IP: %s User: %s popup_site_view on_model_change started.' % (request.remote_addr, current_user.login))
 
@@ -619,38 +696,6 @@ class sample_site_view(base_view):
     base_view.on_model_change(self, form, model, is_created)
 
     current_app.logger.debug('IP: %s User: %s popup_site_view on_model_change finished in %f seconds.' % (request.remote_addr, current_user.login, time.time() - start_time))
-  """
-  def create_model(self, form):
-    try:
-      model = self.model()
-      form.populate_obj(model)
-      model.wkt_location = "POINT(%s %s)" % (form.longitude.data, form.latitude.data)
-      model.user = login.current_user
-      entry_time = datetime.utcnow()
-      model.row_entry_date = entry_time.strftime("%Y-%m-%d %H:%M:%S")
-      self.session.add(model)
-      self._on_model_change(form, model, True)
-      self.session.commit()
-    except Exception as ex:
-      current_app.logger.exception(ex)
-      self.session.rollback()
-      return False
-    else:
-      self.after_model_change(form, model, True)
-
-    return model
-
-  def update_model(self, form, model):
-    if len(model.wkt_location) and form.longitude.data is None and form.latitude.data is None:
-      points = model.wkt_location.replace('POINT(', '').replace(')', '')
-      longitude,latitude = points.split(' ')
-      form.longitude.data = float(longitude)
-      form.latitude.data = float(latitude)
-    else:
-      wkt_location = "POINT(%s %s)" % (form.longitude.data, form.latitude.data)
-      model.wkt_location = wkt_location
-    base_view.update_model(self, form, model)
-  """
 
 class boundary_view(base_view):
   column_list = ['project_site', 'boundary_name', 'wkt_boundary', 'row_entry_date', 'row_update_date']
@@ -679,6 +724,7 @@ class popup_site_view(base_view):
     current_app.logger.debug('IP: %s User: %s popup_site_view on_model_change finished in %f seconds.' % (request.remote_addr, current_user.login, time.time() - start_time))
 
   def get_query(self):
+    #For this view we only return the sites that are temporary, not the main sampleing sites.
     return super(popup_site_view, self).get_query().filter(Sample_Site.temporary_site == True)
 
   def is_accessible(self):

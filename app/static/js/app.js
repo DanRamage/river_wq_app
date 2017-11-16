@@ -57,29 +57,46 @@ function initialize_app(site_name, data, limits) {
     var latest_ms = 0;
     $.each(data['advisory_data'].features, function (s, stations) {
       permanentAdvisory = stations.properties.sign;
-
+      var advisoryText;
+      var station_message;
+      //An individual station can have its own message. This is useful for the popup hot spots
+      //we might get. This is a site that's not a permanent site that we are sampling/modelling
+      //but one where an issue has occured and is in the area and we want a point on the map.
+      if('station_message' in stations.properties && stations.properties.station_message.length)
+      {
+        station_message = stations.properties.station_message;
+      }
+      //This goes along with the idea of a popup hot spot. We want to denote the site has an
+      //issue.
+      if('has_advisory' in stations.properties && stations.properties.has_advisory)
+      {
+        advisoryText = 'Yes';
+      }
       $.each(stations.properties.test, function (i, j) {
 
-        //Determine if an advisory is in place (permanent or temporary based on ETCOC of 104)
-        if (parseInt(j.value, 10) >= limits["High"].min_limit || permanentAdvisory === true) {
-          if (permanentAdvisory === true) {
-            advisoryText = 'Long Term';
+        if(advisoryText === undefined)
+        {
+          //Determine if an advisory is in place (permanent or temporary based on ETCOC limit)
+          if (parseInt(j.value, 10) >= limits["High"].min_limit || permanentAdvisory === true) {
+            if (permanentAdvisory === true) {
+              advisoryText = 'Long Term';
+            }
+            else {
+              advisoryText = 'Yes';
+            }
           }
           else {
-            advisoryText = 'Yes';
+            advisoryText = 'None';
           }
         }
-        else {
-          advisoryText = 'None';
-        }
-
         currentEtcoc[stations.properties.station] = {
           "desc": stations.properties.desc,
           "date": j.date,
           "lat": stations.geometry.coordinates[1],
           "lng": stations.geometry.coordinates[0],
           "value": j.value,
-          "advisory": advisoryText
+          "advisory": advisoryText,
+          "message": station_message
         };
         if('extents_geometry' in stations.properties)
         {
@@ -751,7 +768,6 @@ if(onlineStatus != 'off'){
         var station_message = '';
 
         forecast = 'None';
-        station_message = '';
         if(Object.keys(predictionData).length && i in predictionData) {
           //Map markers
           if (typeof predictionData[i] === "undefined" || predictionData[i].ensemble == "NO TEST") {
@@ -767,6 +783,9 @@ if(onlineStatus != 'off'){
           else {
             station_message = '';
           }
+        }
+        if(typeof station.message !== 'undefined') {
+          station_message = station.message;
         }
         var dateIcon = '';
 
