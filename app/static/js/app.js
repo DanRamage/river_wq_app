@@ -784,8 +784,13 @@ if(onlineStatus != 'off'){
             station_message = '';
           }
         }
+        var station_message_style = 'low';
         if(typeof station.message !== 'undefined') {
           station_message = station.message;
+          if(station.advisory == 'Long Term' || station.advisory == 'Yes')
+          {
+            station_message_style = 'high';
+          }
         }
         var dateIcon = '';
 
@@ -863,7 +868,7 @@ if(onlineStatus != 'off'){
                           '</a>' +
                         '</div>' +
                         '</div>' +
-                        '<div style="clear:both;white-space:normal;">' + station_message + '</div>' +
+                        '<div class=' + station_message_style + ' style="clear:both;white-space:normal;">' + station_message + '</div>' +
                         '</div>' +
                         '</div>';
 

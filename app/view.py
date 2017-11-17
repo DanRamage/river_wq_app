@@ -192,7 +192,12 @@ class SitePage(View):
       if len(popup_sites):
         advisory_data_features = data['advisory_data']['features']
         for site in popup_sites:
-          feature = build_feature(site, site.row_entry_date, [])
+          sample_date = site.row_entry_date
+          sample_value = []
+          if len(site.site_data):
+            sample_date = site.site_data[0].sample_date
+            sample_value.append(site.site_data[0].sample_value)
+          feature = build_feature(site, sample_date, sample_value)
           advisory_data_features.append(feature)
     except Exception as e:
       current_app.logger.exception(e)
@@ -663,8 +668,8 @@ class sample_site_view(base_view):
   """
   View for the Sample_Site table.
   """
-  column_list = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'epa_id', 'county', 'issues_advisories', 'has_current_advisory', 'advisory_text', 'boundaries', 'temporary_site', 'row_entry_date', 'row_update_date']
-  form_columns = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'epa_id', 'county', 'issues_advisories', 'has_current_advisory', 'advisory_text', 'boundaries', 'temporary_site']
+  column_list = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'epa_id', 'county', 'issues_advisories', 'has_current_advisory', 'advisory_text', 'boundaries', 'temporary_site', 'site_data', 'row_entry_date', 'row_update_date']
+  form_columns = ['project_site', 'site_name', 'latitude', 'longitude', 'description', 'epa_id', 'county', 'site_data','issues_advisories', 'has_current_advisory', 'advisory_text', 'boundaries', 'temporary_site']
 
   def on_model_change(self, form, model, is_created):
     """
@@ -731,3 +736,9 @@ class popup_site_view(base_view):
     if current_user.is_active and current_user.is_authenticated:
       return True
     return False
+
+
+class sample_site_data_view(base_view):
+  column_list=['sample_site_name', 'sample_date', 'sample_value', 'row_entry_date', 'row_update_date']
+  form_columns=['sample_site_name', 'sample_date', 'sample_value']
+

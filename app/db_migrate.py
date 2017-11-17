@@ -174,6 +174,17 @@ class Sample_Site(db.Model):
   def __str__(self):
     return self.site_name
 
+class Sample_Site_Data(db.Model):
+  __table_name__ = 'sample_site_data'
+  id = db.Column(db.Integer, primary_key=True)
+  row_entry_date = db.Column(db.String(32))
+  row_update_date = db.Column(db.String(32))
+  sample_date = db.Column(db.String(32), unique=True)
+  sample_value = db.Column(db.Float)
+
+  site_id = db.Column(db.Integer, db.ForeignKey(Sample_Site.id))
+  sample_site_name = db.relationship('Sample_Site', backref='sample_site_data', foreign_keys=[site_id])
+
 
 class Site_Extent(db.Model):
   __table_name__ = 'site_extent'

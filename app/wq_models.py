@@ -137,9 +137,24 @@ class Sample_Site(db.Model):
                              primaryjoin=(Boundary_Mapper.sample_site_id == id),
                              backref='sample_site')
   extents = db.relationship("Site_Extent", backref='sample_site')
-
+  site_data = db.relationship("Sample_Site_Data", backref='sample_site',
+                              order_by="desc(Sample_Site_Data.sample_date)")
   def __str__(self):
     return self.site_name
+
+class Sample_Site_Data(db.Model):
+  __table_name__ = 'sample_site_data'
+  id = db.Column(db.Integer, primary_key=True)
+  row_entry_date = db.Column(db.String(32))
+  row_update_date = db.Column(db.String(32))
+  sample_date = db.Column(db.String(32), unique=True)
+  sample_value = db.Column(db.Float)
+
+  site_id = db.Column(db.Integer, db.ForeignKey(Sample_Site.id))
+  sample_site_name = db.relationship('Sample_Site', backref='sample_site_data', foreign_keys=[site_id])
+
+  def __str__(self):
+    return '%s: %.2f' % (self.sample_date, self.sample_value)
 
 
 class Site_Extent(db.Model):
