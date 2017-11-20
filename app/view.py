@@ -181,10 +181,6 @@ class SitePage(View):
         'advisory_data': simplejson.loads(advisory_data)
       }
       #Query the database to see if we have any temporary popup sites.
-      # .join(Site_Extent, Site_Extent.site_id == Sample_Site.id) \
-      #        .join(Sample_Site.extents)\
-      #  .options(db.joinedload(Sample_Site.extents))\
-
       popup_sites = db.session.query(Sample_Site) \
         .join(Project_Area, Project_Area.id == Sample_Site.project_site_id) \
         .filter(Project_Area.area_name == self.site_name)\
