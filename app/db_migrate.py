@@ -232,5 +232,6 @@ class User(db.Model):
                           backref=db.backref('user', lazy='dynamic'))
 
 
+
 if __name__ == '__main__':
   manager.run()

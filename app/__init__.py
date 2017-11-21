@@ -92,6 +92,7 @@ def build_flask_admin(app):
 
   return
 
+
 def build_url_rules(app):
   from view import ShowIntroPage, \
     SaludaPage, \

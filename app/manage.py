@@ -29,6 +29,7 @@ def init_logging(app):
   return
 
 
+
 @app.cli.command()
 @click.option('--params', nargs=2)
 def build_sites(params):

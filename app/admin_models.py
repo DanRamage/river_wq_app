@@ -11,6 +11,7 @@ roles_users = db.Table(
 )
 
 
+
 class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer(), primary_key=True)
     row_entry_date = db.Column(db.String(32))

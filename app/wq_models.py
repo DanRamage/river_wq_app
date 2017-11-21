@@ -157,6 +157,7 @@ class Sample_Site_Data(db.Model):
     return '%s: %.2f' % (self.sample_date, self.sample_value)
 
 
+
 class Site_Extent(db.Model):
   __table_name__ = 'site_extent'
   id = db.Column(db.Integer, primary_key=True)
