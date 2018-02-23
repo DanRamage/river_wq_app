@@ -90,7 +90,7 @@ class Boundary(db.Model):
   row_entry_date = db.Column(db.String(32))
   row_update_date = db.Column(db.String(32))
   boundary_name  = db.Column(db.String(128), nullable=False)
-  wkt_boundary = db.Column(db.Text, nullable=True)
+  wkb_boundary = db.Column(db.LargeBinary, nullable=True)
 
   project_site_id = db.Column('project_site_id', db.Integer, db.ForeignKey('project_area.id'))
   project_site = db.relationship('Project_Area', backref='boundary')
@@ -116,7 +116,6 @@ class Sample_Site(db.Model):
 
   latitude = db.Column(db.Float, nullable=True)
   longitude = db.Column(db.Float, nullable=True)
-  wkt_location = db.Column(db.Text, nullable=False)
 
   site_name = db.Column(db.String(128), nullable=False)
   description = db.Column(db.Text, nullable=True)
