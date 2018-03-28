@@ -54,7 +54,12 @@ if PYCHARM_DEBUG:
 
 
 
-def build_feature(sample_site_rec, sample_date, values):
+#def build_feature(sample_site_rec, sample_date, values):
+def build_feature(**kwargs):
+  sample_site_rec = kwargs['sample_site']
+  sample_date = kwargs['sample_date']
+  values = kwargs['sample_values']
+  popup_site = kwargs['popup_site']
   beachadvisories = {
     'date': '',
     'station': sample_site_rec.site_name,
@@ -81,6 +86,7 @@ def build_feature(sample_site_rec, sample_date, values):
       'desc': sample_site_rec.description,
       'has_advisory': sample_site_rec.has_current_advisory,
       'station_message': sample_site_rec.advisory_text,
+      'popup_site': popup_site,
       'len': '',
       'test': {
         'beachadvisories': beachadvisories
@@ -194,7 +200,7 @@ class SitePage(View):
           if len(site.site_data):
             sample_date = site.site_data[0].sample_date
             sample_value.append(site.site_data[0].sample_value)
-          feature = build_feature(site, sample_date, sample_value)
+          feature = build_feature(site=site, sample_date=sample_date, sample_value=sample_value, popup_site=True)
           advisory_data_features.append(feature)
     except Exception as e:
       current_app.logger.exception(e)

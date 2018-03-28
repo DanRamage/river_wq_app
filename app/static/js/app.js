@@ -72,6 +72,12 @@ function initialize_app(site_name, data, limits) {
       {
         advisoryText = 'Yes';
       }
+      var popup_site = false;
+      //If this station is a popup station, want to use a different icon on the map
+      //to distinguish it from normal sampling sites.
+      if('popup_site' in stations.properties) {
+        popup_site = stations.properties.popup_site;
+      }
       $.each(stations.properties.test, function (i, j) {
 
         if(advisoryText === undefined)
@@ -96,7 +102,8 @@ function initialize_app(site_name, data, limits) {
           "lng": stations.geometry.coordinates[0],
           "value": j.value,
           "advisory": advisoryText,
-          "message": station_message
+          "message": station_message,
+          "popup_site": popup_site
         };
         if('extents_geometry' in stations.properties)
         {
@@ -834,6 +841,10 @@ if(onlineStatus != 'off'){
         var marker_icon;
         if(marker_rating !== 'None') {
           marker_icon = 'static/images/' + advisory_limits[marker_rating].icon;
+        }
+        else if(station.popup_site)
+        {
+          marker_icon = 'static/images/popup_warn.png';
         }
         else
         {
