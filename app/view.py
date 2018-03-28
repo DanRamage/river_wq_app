@@ -200,7 +200,7 @@ class SitePage(View):
           if len(site.site_data):
             sample_date = site.site_data[0].sample_date
             sample_value.append(site.site_data[0].sample_value)
-          feature = build_feature(site=site, sample_date=sample_date, sample_value=sample_value, popup_site=True)
+          feature = build_feature(sample_site=site, sample_date=sample_date, sample_values=sample_value, popup_site=True)
           advisory_data_features.append(feature)
     except Exception as e:
       current_app.logger.exception(e)
