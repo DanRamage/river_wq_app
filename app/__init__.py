@@ -105,7 +105,9 @@ def build_url_rules(app):
   #Page rules
   app.add_url_rule('/', view_func=ShowIntroPage.as_view('intro_page'))
   app.add_url_rule('/saluda', view_func=SaludaPage.as_view('saluda'))
+  app.add_url_rule('/midlands', view_func=SaludaPage.as_view('saluda'))
   app.add_url_rule('/saluda/voicemessage', view_func=AlertMessagePage.as_view('voicemail'), methods=['GET', 'POST'])
+  app.add_url_rule('/midlands/voicemessage', view_func=AlertMessagePage.as_view('voicemail'), methods=['GET', 'POST'])
   #app.add_url_rule('/message/voicemail', view_func=AlertMessagePage.as_view('voicemail'), methods=['GET', 'POST'])
 
   #REST rules
