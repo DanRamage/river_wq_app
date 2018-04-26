@@ -150,7 +150,7 @@ function initialize_app(site_name, data, limits) {
     if("High" in advisory_limits) {
       advisories_legend.push('<img src="static/images/' + advisory_limits["High"].icon + '" /> Yes: an advisory is current - swimming not recommended.</br>');
     }
-    advisories_legend.push('<img src="static/images/none_marker.png" />No data available or data older than 30 days.<br />');
+    advisories_legend.push('<img src="static/images/none_marker.png" />No data available or data older than 7 days.<br />');
     advisories_legend.push('<img src="static/images/popup_warn.png" />An external warning has been issued at or around this location.<br /></p>');
     advisories_legend.push('<a class="ui-btn ui-btn-corner-all ui-mini ui-btn-up-c" data-theme="c" data-wrapperels="span" data-corners="true" href="#moreInformation" data-role="button" data-mini="true" style="padding:0.4em 1em;"><span class="ui-btn-inner ui-btn-corner-all"><span class="ui-btn-text">More Info</span></span></a></div>')
     legendContentHtml['advisories'] =  advisories_legend.join('');
@@ -898,7 +898,7 @@ if(onlineStatus != 'off'){
               '</div>' +
               '<div></br></div>'+
               '<div>This is not a sampling site, however an event has occured at or </br>' +
-              ' around this location that has elevated bacteria levels.</div>'
+              ' around this location.</div>'
               '</div>';
 
           }
