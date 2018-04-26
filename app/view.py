@@ -272,9 +272,9 @@ class AlertMessagePage(View):
         json_data = simplejson.load(json_file)
         if len(json_data['sites']):
           sites = ",".join(json_data['sites'])
-          resp.say("Welcome to the Lower Saluda River water quality advisory report. For %s the following sites have high bacteria counts: %s" % (json_data['sampling_date'], sites))
+          resp.say("Welcome to the Midlands River water quality advisory report. For %s the following sites have high bacteria counts: %s" % (json_data['sampling_date'], sites))
         else:
-          resp.say("Welcome to the Lower Saluda River water quality advisory report. For %s there are no alerts." % (json_data['sampling_date']))
+          resp.say("Welcome to the Midlands River water quality advisory report. For %s there are no alerts." % (json_data['sampling_date']))
     except(IOError,Exception) as e:
       current_app.logger.exception(e)
     #resp.say("Test")
