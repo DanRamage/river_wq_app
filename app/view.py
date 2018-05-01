@@ -654,6 +654,18 @@ class site_message_view(base_view):
       return True
     return False
 
+  def on_model_change(self, form, model, is_created):
+    """
+    When a new record is created or editing, we want to take the values in the lat/long field
+    and populate the wkt_location field.
+    :param form:
+    :param model:
+    :param is_created:
+    :return:
+    """
+    base_view.on_model_change(self, form, model, is_created)
+    current_app.logger.debug("IP: %s User: %s site_message_view on_model_change added message: %s" % (request.remote_addr, current_user.login, str(form.message.data)))
+
 class site_message_level_view(base_view):
   column_list = ['message_level', 'row_entry_date', 'row_update_date']
   form_columns = ['message_level']
@@ -767,6 +779,7 @@ class popup_site_view(base_view):
     model.wkt_location = "POINT(%s %s)" % (form.longitude.data, form.latitude.data)
     base_view.on_model_change(self, form, model, is_created)
 
+    current_app.logger.debug('IP: %s User: %s added site at: Lon: %s Lat: %s' % (request.remote_addr, current_user.login, form.longitude.data, form.latitude.data))
     current_app.logger.debug('IP: %s User: %s popup_site_view on_model_change finished in %f seconds.' % (request.remote_addr, current_user.login, time.time() - start_time))
 
   def get_query(self):
