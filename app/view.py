@@ -631,7 +631,7 @@ class MyAdminIndexView(admin.AdminIndexView):
     """
     @expose('/logout/')
     def logout_view(self):
-        current_app.logger.debug("IP: %s Logout page" % (request.remote_addr))
+        current_app.logger.debug("IP: %s User: %s logged out" % (request.remote_addr, login.current_user.login))
         login.logout_user()
         return redirect(url_for('.index'))
 
