@@ -597,6 +597,7 @@ class MyAdminIndexView(admin.AdminIndexView):
         if helpers.validate_form_on_submit(form):
             user = form.get_user()
             login.login_user(user)
+            current_app.logger.debug("IP: %s User: %s logged in." % (request.remote_addr, form.login.data))
         else:
           current_app.logger.debug("IP: %s User: %s is not authenticated" % (request.remote_addr, form.login.data))
         if login.current_user.is_authenticated:
