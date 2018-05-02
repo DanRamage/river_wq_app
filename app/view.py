@@ -112,6 +112,10 @@ class ShowIntroPage(View):
     current_app.logger.debug('IP: %s intro_page rendered' % (request.remote_addr))
     return render_template("sc_rivers_intro.html")
 
+class MidlandsNewsPage(View):
+  def dispatch_request(self):
+    current_app.logger.debug('IP: %s MidlandsNewsPage rendered' % (request.remote_addr))
+    return render_template("news_page.html")
 
 class SitePage(View):
   def __init__(self, site_name):
