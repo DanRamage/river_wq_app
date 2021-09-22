@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" class="full">
   <head>
-    {%  block head %}{% endblock %}
+    {%  block head %}
+        {% block jsonld_block %}
+        {% endblock %}
+    {% endblock %}
   </head>
   <body>
     {% block body %}{% endblock %}

@@ -64,6 +64,30 @@
     </style>
 {% endblock %}
 
+{%  block jsonld_block %}
+    {
+         "@context": "https://schema.org/",
+          "@type": "DataFeed",
+          "name": "Midlands River Coalition",
+          "description": "A variety of stakeholders have come together to start an enhanced monitoring program for the Lower Saluda Scenic River during the peak recreational season.",
+          "url": "https://howsmyscriver.org",
+         "dataFeedElement": [
+             {% if advisory_data in data %}
+                 {% if features in data.advisory_data %}
+                     {% for station in data.advisory_data.features %}
+                         {
+                             "@type": "DataFeedItem",
+                             "name": station.properties.station,
+                             "description": station.properties.desc,
+                             "dateModified": station.properties.test.beachadvisories[0].date
+                         }
+                     {% endfor %}
+                 {% endif %}
+             {% endif %}
+        ]
+    }
+{% endblock %}
+
 {% block site_message_block %}
   {% if site_message %}
   <div id="message_area" class="message_area_text">
