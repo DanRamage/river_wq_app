@@ -74,10 +74,7 @@
          "dataFeedElement": [
                      {% for station in data['advisory_data'].features %}
                          {
-                             "@type": "DataFeedItem",
-                             "name": {{station.properties.station}},
-                             "description": {{station.properties.desc}},
-                             "dateModified": {{station.properties.test.beachadvisories[0].date}}
+                             "@type": "DataFeedItem"
                          }
                      {% endfor %}
         ]
