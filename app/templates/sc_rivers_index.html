@@ -67,11 +67,14 @@
 {%  block jsonld_block %}
     {
          "@context": "https://schema.org/",
-          "@type": "DataFeed",
+          "@type": "Dataset",
           "name": "Midlands River Coalition",
           "description": "A variety of stakeholders have come together to start an enhanced monitoring program for the Lower Saluda Scenic River during the peak recreational season.",
           "url": "https://howsmyscriver.org",
-         "dataFeedElement": [
+          "item" :
+          {
+            "@type": "DataFeed",
+            "dataFeedElement": [
                      {% for station in data['advisory_data'].features %}
                          {
                              "@type": "DataFeedItem",
@@ -90,6 +93,7 @@
                             }
                          }{%  if loop.index0 < loop.length - 1%},{% endif %}
                      {% endfor %}
+          }
         ]
     }
 {% endblock %}
