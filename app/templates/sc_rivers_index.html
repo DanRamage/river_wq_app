@@ -78,10 +78,7 @@
                              "name": "{{station.properties.station}}",
                              "description": "{{station.properties.desc}}",
                              "dateModified": "{{station.properties.test.beachadvisories.date}}"
-                         }
-                         {%  if loop.index0 < loop.length -2%}
-                            ,
-                         {% endif %}
+                         }{%  if loop.index0 < loop.length - 1%},{% endif %}
                      {% endfor %}
         ]
     }
