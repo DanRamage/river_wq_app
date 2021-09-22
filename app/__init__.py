@@ -168,7 +168,7 @@ def init_login(app):
   login_manager.init_app(app)
 """
 # Create user loader function
-from admin_models import User
+from .admin_models import User
 @login_manager.user_loader
 def load_user(user_id):
   return db.session.query(User).get(user_id)
