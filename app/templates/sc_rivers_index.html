@@ -72,7 +72,6 @@
           "description": "A variety of stakeholders have come together to start an enhanced monitoring program for the Lower Saluda Scenic River during the peak recreational season.",
           "url": "https://howsmyscriver.org",
          "dataFeedElement": [
-                {% if advisory_data in data %}
                      {% for station in data.advisory_data.features %}
                          {
                              "@type": "DataFeedItem",
@@ -81,7 +80,6 @@
                              "dateModified": {{station.properties.test.beachadvisories[0].date}}
                          }
                      {% endfor %}
-                {% endif %}
         ]
     }
 {% endblock %}
