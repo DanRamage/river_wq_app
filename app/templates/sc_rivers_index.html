@@ -77,7 +77,12 @@
                              "@type": "DataFeedItem",
                              "name": "{{station.properties.station}}",
                              "description": "{{station.properties.desc}}",
-                             "dateModified": "{{station.properties.test.beachadvisories.date}}"
+                             "dateModified": "{{station.properties.test.beachadvisories.date}}",
+                             "geo": {
+                                "latitude": "station.geometry.coordinates[1]",
+                                "longitude": "station.geometry.coordinates[0]"
+                              }
+
                          }{%  if loop.index0 < loop.length - 1%},{% endif %}
                      {% endfor %}
         ]
