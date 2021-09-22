@@ -77,7 +77,7 @@
                              "@type": "DataFeedItem",
                              "name": {{station.properties.station}},
                              "description": {{station.properties.desc}},
-                             {%  for test in stations.properties.test %}
+                             {%  for test in station.properties.test %}
                                  "dateModified": {{test.date}}
                              {% endfor %}
                          }
