@@ -74,7 +74,8 @@
           "item" :
           {
             "@type": "DataFeed",
-            "dataFeedElement": [
+            "dataFeedElement":
+            [
                      {% for station in data['advisory_data'].features %}
                          {
                              "@type": "DataFeedItem",
@@ -93,8 +94,8 @@
                             }
                          }{%  if loop.index0 < loop.length - 1%},{% endif %}
                      {% endfor %}
+            ]
           }
-        ]
     }
 {% endblock %}
 
