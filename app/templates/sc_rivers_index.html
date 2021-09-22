@@ -79,7 +79,7 @@
                              "description": "{{station.properties.desc}}",
                              "dateModified": "{{station.properties.test.beachadvisories.date}}"
                          }
-                         {%  if loop.index0 < length(data['advisory_data'].features) -2 %}
+                         {%  if loop.index0 < loop.length -2%}
                             ,
                          {% endif %}
                      {% endfor %}
