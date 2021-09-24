@@ -44,7 +44,7 @@ def create_app(config_file):
 
 def build_flask_admin(app):
 
-  from view import MyAdminIndexView, \
+  from .view import MyAdminIndexView, \
     AdminUserModelView, \
     BasicUserModelView, \
     RolesView,\
@@ -94,7 +94,7 @@ def build_flask_admin(app):
 
 
 def build_url_rules(app):
-  from view import ShowIntroPage, \
+  from .view import ShowIntroPage, \
     SaludaPage, \
     MaintenanceMode, \
     PredictionsAPI, \
