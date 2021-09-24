@@ -20,8 +20,8 @@ from twilio.twiml.voice_response import VoiceResponse
 
 
 from app import db
-from admin_models import User
-from wq_models import Project_Area, \
+from .admin_models import User
+from .wq_models import Project_Area, \
   Site_Message, \
   Project_Info_Page, \
   Advisory_Limits, \
