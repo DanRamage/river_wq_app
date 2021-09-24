@@ -15,7 +15,6 @@ from datetime import datetime
 from wtforms import form, fields, validators
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import DEBUG_DATA_FILES, PYCHARM_DEBUG
-from admin_models import User
 from twilio.twiml.voice_response import VoiceResponse
 
 
