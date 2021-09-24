@@ -59,8 +59,8 @@ def build_flask_admin(app):
     popup_site_view, \
     sample_site_data_view
 
-  from admin_models import User, Role
-  from wq_models import Project_Area, \
+  from .admin_models import User, Role
+  from .wq_models import Project_Area, \
     Site_Message, \
     Project_Type, \
     Advisory_Limits, \
