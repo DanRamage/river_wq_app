@@ -8,7 +8,8 @@ from flask_admin import helpers, expose
 from flask_security import Security, SQLAlchemyUserDatastore, \
     login_required, current_user
 import time
-import simplejson
+#import simplejson
+import json as simplejson
 import geojson
 from datetime import datetime
 from wtforms import form, fields, validators
