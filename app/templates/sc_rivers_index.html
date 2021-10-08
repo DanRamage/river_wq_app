@@ -289,7 +289,7 @@
       <p> {{ sampling_program_info.description }}</p>
       <p>
         {% if sampling_program_info.advisory_limits %}
-          {% for limit_type, limit_rec in sampling_program_info.advisory_limits.iteritems() %}
+          {% for limit_type, limit_rec in sampling_program_info.advisory_limits.items() %}
             {% if limit_type != 'No data' %}
               {% if limit_type != 'High' %}
                 <img src="/static/images/{{ limit_rec.icon }}" /> {{ limit_type }} level ({{ limit_rec.min_limit }}-{{ limit_rec.max_limit }} per 100mL of water)<br />
