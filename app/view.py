@@ -29,27 +29,27 @@ from .wq_models import Project_Area, \
   Boundary
 
 if not DEBUG_DATA_FILES:
-  SC_RIVERS_PREDICTIONS_FILE=os.path.join(DATA_DIRECTORY, '/Predictions.json')
-  SC_RIVERS_ADVISORIES_FILE=os.path.join(DATA_DIRECTORY, '/beachAdvisoryResults.json')
-  SC_RIVERS_STATIONS_DATA_DIR=os.path.join(DATA_DIRECTORY, '/monitorstations')
-  VOICEMAIL_FILE=os.path.join(DATA_DIRECTORY, '/voicemail.json')
-  SALUDA_SAMPLE_SITES_FILE = os.path.join(DATA_DIRECTORY, '/sample_sites_boundary.csv')
+  SC_RIVERS_PREDICTIONS_FILE=os.path.join(DATA_DIRECTORY, 'Predictions.json')
+  SC_RIVERS_ADVISORIES_FILE=os.path.join(DATA_DIRECTORY, 'beachAdvisoryResults.json')
+  SC_RIVERS_STATIONS_DATA_DIR=os.path.join(DATA_DIRECTORY, 'monitorstations')
+  VOICEMAIL_FILE=os.path.join(DATA_DIRECTORY, 'voicemail.json')
+  SALUDA_SAMPLE_SITES_FILE = os.path.join(DATA_DIRECTORY, 'sample_sites_boundary.csv')
   SALUDA_BOUNDARIES_FILE = os.path.join(DATA_DIRECTORY, 'sc_rivers_boundaries.csv')
 
 else:
-  SC_RIVERS_PREDICTIONS_FILE=os.path.join(DATA_DIRECTORY, '/Predictions.json')
-  SC_RIVERS_ADVISORIES_FILE=os.path.join(DATA_DIRECTORY, '/beachAdvisoryResults.json')
-  SC_RIVERS_STATIONS_DATA_DIR=os.path.join(DATA_DIRECTORY, '/monitorstations')
-  VOICEMAIL_FILE=os.path.join(DATA_DIRECTORY, '/voicemail.json')
-  SALUDA_SAMPLE_SITES_FILE = os.path.join(DATA_DIRECTORY, '/sample_sites_boundary.csv')
+  SC_RIVERS_PREDICTIONS_FILE=os.path.join(DATA_DIRECTORY, 'Predictions.json')
+  SC_RIVERS_ADVISORIES_FILE=os.path.join(DATA_DIRECTORY, 'beachAdvisoryResults.json')
+  SC_RIVERS_STATIONS_DATA_DIR=os.path.join(DATA_DIRECTORY, 'monitorstations')
+  VOICEMAIL_FILE=os.path.join(DATA_DIRECTORY, 'voicemail.json')
+  SALUDA_SAMPLE_SITES_FILE = os.path.join(DATA_DIRECTORY, 'sample_sites_boundary.csv')
   SALUDA_BOUNDARIES_FILE = os.path.join(DATA_DIRECTORY, 'sc_rivers_boundaries.csv')
 
 if PYCHARM_DEBUG:
-  SC_RIVERS_PREDICTIONS_FILE=os.path.join(DATA_DIRECTORY, '/Predictions.json')
-  SC_RIVERS_ADVISORIES_FILE=os.path.join(DATA_DIRECTORY, '/beachAdvisoryResults.json')
-  SC_RIVERS_STATIONS_DATA_DIR=os.path.join(DATA_DIRECTORY, '/monitorstations')
-  VOICEMAIL_FILE=os.path.join(DATA_DIRECTORY, '/voicemail.json')
-  SALUDA_SAMPLE_SITES_FILE = os.path.join(DATA_DIRECTORY, '/sample_sites_boundary.csv')
+  SC_RIVERS_PREDICTIONS_FILE=os.path.join(DATA_DIRECTORY, 'Predictions.json')
+  SC_RIVERS_ADVISORIES_FILE=os.path.join(DATA_DIRECTORY, 'beachAdvisoryResults.json')
+  SC_RIVERS_STATIONS_DATA_DIR=os.path.join(DATA_DIRECTORY, 'monitorstations')
+  VOICEMAIL_FILE=os.path.join(DATA_DIRECTORY, 'voicemail.json')
+  SALUDA_SAMPLE_SITES_FILE = os.path.join(DATA_DIRECTORY, 'sample_sites_boundary.csv')
   SALUDA_BOUNDARIES_FILE = os.path.join(DATA_DIRECTORY, 'sc_rivers_boundaries.csv')
 
 
