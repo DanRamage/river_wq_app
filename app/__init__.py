@@ -29,12 +29,14 @@ def create_app(config_file):
 
   from app import db
   db.app = app
-  db.init_app(app)
 
   # Create in-memory database
-  app.config['DATABASE_FILE'] = DATABASE_FILE
+  app.config['DATABASE_FILE'] = os.path.join(app.root_path, DATABASE_FILE)
+  SQLALCHEMY_DATABASE_URI = 'sqlite:///' + app.config['DATABASE_FILE']
   app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
   app.config['SQLALCHEMY_ECHO'] = SQLALCHEMY_ECHO
+
+  db.init_app(app)
 
   init_logging(app)
   build_flask_admin(app)
