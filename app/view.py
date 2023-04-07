@@ -14,7 +14,7 @@ import geojson
 from datetime import datetime
 from wtforms import form, fields, validators
 from werkzeug.security import generate_password_hash, check_password_hash
-from config import DEBUG_DATA_FILES, PYCHARM_DEBUG
+from config import DEBUG_DATA_FILES, PYCHARM_DEBUG, DATA_DIRECTORY
 from twilio.twiml.voice_response import VoiceResponse
 
 
@@ -29,28 +29,28 @@ from .wq_models import Project_Area, \
   Boundary
 
 if not DEBUG_DATA_FILES:
-  SC_RIVERS_PREDICTIONS_FILE='/home/xeniaprod/feeds/sc_rivers/Predictions.json'
-  SC_RIVERS_ADVISORIES_FILE='/home/xeniaprod/feeds/sc_rivers/beachAdvisoryResults.json'
-  SC_RIVERS_STATIONS_DATA_DIR='/home/xeniaprod/feeds/sc_rivers/monitorstations'
-  VOICEMAIL_FILE='/home/xeniaprod/feeds/sc_rivers/voicemail.json'
-  SALUDA_SAMPLE_SITES_FILE = '/home/xeniaprod/feeds/sc_rivers/sample_sites_boundary.csv'
-  SALUDA_BOUNDARIES_FILE = '/home/xeniaprod/feeds/sc_rivers/sc_rivers_boundaries.csv'
+  SC_RIVERS_PREDICTIONS_FILE=os.path.join(DATA_DIRECTORY, '/Predictions.json')
+  SC_RIVERS_ADVISORIES_FILE=os.path.join(DATA_DIRECTORY, '/beachAdvisoryResults.json')
+  SC_RIVERS_STATIONS_DATA_DIR=os.path.join(DATA_DIRECTORY, '/monitorstations')
+  VOICEMAIL_FILE=os.path.join(DATA_DIRECTORY, '/voicemail.json')
+  SALUDA_SAMPLE_SITES_FILE = os.path.join(DATA_DIRECTORY, '/sample_sites_boundary.csv')
+  SALUDA_BOUNDARIES_FILE = os.path.join(DATA_DIRECTORY, 'sc_rivers_boundaries.csv')
 
 else:
-  SC_RIVERS_PREDICTIONS_FILE='/home/xeniaprod/feeds/sc_rivers/debug/Predictions.json'
-  SC_RIVERS_ADVISORIES_FILE='/home/xeniaprod/feeds/sc_rivers/debug/beachAdvisoryResults.json'
-  SC_RIVERS_STATIONS_DATA_DIR='/home/xeniaprod/feeds/sc_rivers/debug/monitorstations'
-  VOICEMAIL_FILE='/home/xeniaprod/feeds/sc_rivers/voicemail.json'
-  SALUDA_SAMPLE_SITES_FILE = '/home/xeniaprod/feeds/sc_rivers/sample_sites_boundary.csv'
-  SALUDA_BOUNDARIES_FILE = '/home/xeniaprod/feeds/sc_rivers/sc_rivers_boundaries.csv'
+  SC_RIVERS_PREDICTIONS_FILE=os.path.join(DATA_DIRECTORY, '/Predictions.json')
+  SC_RIVERS_ADVISORIES_FILE=os.path.join(DATA_DIRECTORY, '/beachAdvisoryResults.json')
+  SC_RIVERS_STATIONS_DATA_DIR=os.path.join(DATA_DIRECTORY, '/monitorstations')
+  VOICEMAIL_FILE=os.path.join(DATA_DIRECTORY, '/voicemail.json')
+  SALUDA_SAMPLE_SITES_FILE = os.path.join(DATA_DIRECTORY, '/sample_sites_boundary.csv')
+  SALUDA_BOUNDARIES_FILE = os.path.join(DATA_DIRECTORY, 'sc_rivers_boundaries.csv')
 
 if PYCHARM_DEBUG:
-  SC_RIVERS_PREDICTIONS_FILE='/Users/danramage/tmp/sc_rivers/Predictions.json'
-  SC_RIVERS_ADVISORIES_FILE='/Users/danramage/tmp/sc_rivers/beachAdvisoryResults.json'
-  SC_RIVERS_STATIONS_DATA_DIR='/Users/danramage/tmp/sc_rivers/monitorstations'
-  VOICEMAIL_FILE='/Users/danramage/tmp/voicemail.json'
-  SALUDA_SAMPLE_SITES_FILE = '/Users/danramage/tmp/sc_rivers/sample_sites_boundary.csv'
-  SALUDA_BOUNDARIES_FILE = '/Users/danramage/tmp/sc_rivers/sc_rivers_boundaries.csv'
+  SC_RIVERS_PREDICTIONS_FILE=os.path.join(DATA_DIRECTORY, '/Predictions.json')
+  SC_RIVERS_ADVISORIES_FILE=os.path.join(DATA_DIRECTORY, '/beachAdvisoryResults.json')
+  SC_RIVERS_STATIONS_DATA_DIR=os.path.join(DATA_DIRECTORY, '/monitorstations')
+  VOICEMAIL_FILE=os.path.join(DATA_DIRECTORY, '/voicemail.json')
+  SALUDA_SAMPLE_SITES_FILE = os.path.join(DATA_DIRECTORY, '/sample_sites_boundary.csv')
+  SALUDA_BOUNDARIES_FILE = os.path.join(DATA_DIRECTORY, 'sc_rivers_boundaries.csv')
 
 
 

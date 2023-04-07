@@ -14,5 +14,8 @@ SQLALCHEMY_ECHO = False
 
 if PYCHARM_DEBUG:
   LOGFILE='/Users/danramage/tmp/log/river_view_site.log'
+  DATA_DIRECTORY='/Users/danramage/tmp/wq_feeds'
+
 else:
   LOGFILE='/var/log/wq_rest/river_view_site.log'
+  DATA_DIRECTORY='/var/nfs/wq_feeds/sc_rivers'
