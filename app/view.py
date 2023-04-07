@@ -419,8 +419,8 @@ class StationDataAPI(MethodView):
 
 # Define login and registration forms (for flask-login)
 class LoginForm(form.Form):
-    login = fields.StringField(validators=[validators.required()])
-    password = fields.PasswordField(validators=[validators.required()])
+    login = fields.StringField(validators=[validators.DataRequired()])
+    password = fields.PasswordField(validators=[validators.DataRequired()])
 
     def validate_login(self, field):
       user = self.get_user()
